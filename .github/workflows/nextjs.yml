@@ -37,7 +37,7 @@ jobs:
 
       - name: Debug Environment Variables
         run: |
-          echo "NEXT_PUBLIC_FIREBASE_API_KEY=${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY:0:5 }}..."
+          echo "NEXT_PUBLIC_FIREBASE_API_KEY=${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}" | sed 's/./*/g' | head -c 10
 
       - name: Install dependencies
         run: yarn install
