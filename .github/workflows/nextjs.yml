@@ -35,6 +35,10 @@ jobs:
           node-version: "20"
           cache: yarn
 
+      - name: Debug Environment Variables
+        run: |
+          echo "NEXT_PUBLIC_FIREBASE_API_KEY=${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY:0:5 }}..."
+
       - name: Install dependencies
         run: yarn install
 
