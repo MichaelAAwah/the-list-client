@@ -25,6 +25,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    environment: test-env  # Add environment here
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
