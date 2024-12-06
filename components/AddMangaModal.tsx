@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 const schema = z.object({
   title: z.string().min(1, { message: 'Title is required' }),
@@ -41,7 +41,7 @@ export default function AddMangaModal({ isOpen, onClose }: AddMangaModalProps) {
     async (data: FormData) => {
       const newManga = {
         ...data,
-        alternateTitles: data.alternateTitles.split(',').map(t => t.trim()),
+        alternateTitles: data.alternateTitles.split(',').map((t: string) => t.trim()),
         dateCreated: Timestamp.now(),
         dateUpdated: Timestamp.now(),
       };
