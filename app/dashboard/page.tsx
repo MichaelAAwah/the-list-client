@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false)
   const router = useRouter();
 
   useEffect(() => {
@@ -28,9 +29,12 @@ export default function Dashboard() {
 
   const handleSignOut = async () => {
     try {
+      setSigningOut(true)
       await auth.signOut();
+      setSigningOut(false)
       router.push('/');
     } catch (error) {
+      setSigningOut(false)
       console.error('Error signing out:', error);
     }
   };
@@ -42,10 +46,10 @@ export default function Dashboard() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Your Manga List</h1>
+        <h1 className="text-3xl font-bold text-white">Your Manga List</h1>
         <div>
           <Button onClick={() => setIsAddModalOpen(true)} className="mr-4">Add Manga</Button>
-          <Button onClick={handleSignOut} variant="outline">Sign Out</Button>
+          <Button onClick={handleSignOut} variant="outline" disabled={signingOut}>{signingOut ? 'Signing Out...' : 'Sign Out'}</Button>
         </div>
       </div>
       <MangaList />

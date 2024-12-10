@@ -26,6 +26,8 @@ export default function MangaList() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const { data: mangas, isLoading, isError } = useQuery<Manga[]>(['mangas'], async () => {
     const user = auth.currentUser;
@@ -38,15 +40,18 @@ export default function MangaList() {
 
   const updateMangaMutation = useMutation(
     async (manga: Partial<Manga> & { id: string }) => {
+      setIsEditing(true)
       const docRef = doc(db, 'list', manga.id);
       await updateDoc(docRef, { ...manga, dateUpdated: Timestamp.now() });
     },
     {
       onSuccess: () => {
+        setIsEditing(false)
         queryClient.invalidateQueries(['mangas']);
         toast({ title: 'Manga updated successfully' });
       },
       onError: (error: any) => {
+        setIsEditing(false)
         toast({ title: 'Error updating manga', description: error.message, variant: 'destructive' });
       },
     }
@@ -54,15 +59,18 @@ export default function MangaList() {
 
   const deleteMangaMutation = useMutation(
     async (id: string) => {
+      setIsDeleting(true)
       const docRef = doc(db, 'list', id);
       await deleteDoc(docRef);
     },
     {
       onSuccess: () => {
+        setIsDeleting(false)
         queryClient.invalidateQueries(['mangas']);
         toast({ title: 'Manga deleted successfully' });
       },
       onError: (error: any) => {
+        setIsDeleting(false)
         toast({ title: 'Error deleting manga', description: error.message, variant: 'destructive' });
       },
     }
@@ -74,7 +82,7 @@ export default function MangaList() {
   return (
     <div className="space-y-4">
       {mangas?.map((manga) => (
-        <div key={manga.id} className="bg-white shadow rounded-lg p-4">
+        <div key={manga.id} className="backdrop-blur-sm bg-white/30 shadow rounded-lg p-4">
           {editingId === manga.id ? (
             <form onSubmit={(e) => {
               e.preventDefault();
@@ -90,7 +98,7 @@ export default function MangaList() {
               };
               updateMangaMutation.mutate(updatedManga);
               setEditingId(null);
-            }} className="space-y-2">
+            }} className="space-y-2 text-white">
               <div>
                 <Label htmlFor="title">Title</Label>
                 <Input id="title" name="title" defaultValue={manga.title} required />
@@ -115,21 +123,29 @@ export default function MangaList() {
                 <Label htmlFor="alternateTitles">Alternate Titles (comma-separated)</Label>
                 <Input id="alternateTitles" name="alternateTitles" defaultValue={manga.alternateTitles.join(', ')} />
               </div>
-              <Button type="submit">Save</Button>
-              <Button type="button" variant="outline" onClick={() => setEditingId(null)}>Cancel</Button>
+              <div className="mt-2 flex justify-end">
+                <Button type="submit" disabled={isEditing}>{isEditing ? 'Saving...' : 'Save'}</Button>
+                <Button type="button" variant="outline" className='ms-2 text-black' onClick={() => setEditingId(null)}>Cancel</Button>
+              </div>
             </form>
           ) : (
-            <>
+            <div className='text-white capitalize'>
               <h3 className="text-lg font-semibold">{manga.title}</h3>
               <p>Chapter: {manga.chapter} / {manga.totalChapters}</p>
               <p>Status: {manga.isComplete ? 'Completed' : 'Ongoing'}</p>
               <p>Alternate Titles: {manga.alternateTitles.join(', ')}</p>
-              <a href={manga.url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">Read</a>
-              <div className="mt-2">
-                <Button onClick={() => setEditingId(manga.id)} className="mr-2">Edit</Button>
-                <Button onClick={() => deleteMangaMutation.mutate(manga.id)} variant="destructive">Delete</Button>
+                {/* <a href={manga.url} target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-200 rounded-sm text-slate-900 hover:underline">Read</a> */}
+              <div className="mt-4 flex justify-between">
+                <div>
+                  <Button type='button' variant='secondary' onClick={() => window.open(manga.url, '_blank', 'noopener,noreferrer')}>Read</Button>
+                </div>
+
+                <div>
+                  <Button onClick={() => setEditingId(manga.id)} className="mr-2">Edit</Button>
+                  <Button onClick={() => deleteMangaMutation.mutate(manga.id)} variant="destructive" disabled={isDeleting}>{isDeleting ? 'Deleting...' : 'Delete'}</Button>
+                </div>
               </div>
-            </>
+            </div>
           )}
         </div>
       ))}

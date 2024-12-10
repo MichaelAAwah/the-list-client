@@ -36,6 +36,7 @@ export default function AddMangaModal({ isOpen, onClose }: AddMangaModalProps) {
   });
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [loading, setLoading] = useState(false)
 
   const addMangaMutation = useMutation(
     async (data: FormData) => {
@@ -45,16 +46,19 @@ export default function AddMangaModal({ isOpen, onClose }: AddMangaModalProps) {
         dateCreated: Timestamp.now(),
         dateUpdated: Timestamp.now(),
       };
+      setLoading(true)
       await addDoc(collection(db, 'list'), newManga);
     },
     {
       onSuccess: () => {
+        setLoading(false)
         queryClient.invalidateQueries(['mangas']);
         toast({ title: 'Manga added successfully' });
         reset();
         onClose();
       },
       onError: (error: any) => {
+        setLoading(false)
         toast({ title: 'Error adding manga', description: error.message, variant: 'destructive' });
       },
     }
@@ -99,7 +103,7 @@ export default function AddMangaModal({ isOpen, onClose }: AddMangaModalProps) {
             <Label htmlFor="alternateTitles">Alternate Titles (comma-separated)</Label>
             <Input id="alternateTitles" {...register('alternateTitles')} />
           </div>
-          <Button type="submit">Add Manga</Button>
+          <Button type="submit" disabled={loading}>{loading ? 'Adding Mange...' : 'Add Manga'}</Button>
         </form>
       </DialogContent>
     </Dialog>

@@ -21,6 +21,7 @@ type FormData = z.infer<typeof schema>;
 
 export default function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
@@ -29,13 +30,16 @@ export default function AuthForm() {
 
   const onSubmit = async (data: FormData) => {
     try {
+      setIsLoading(true)
       if (isLogin) {
         await signInWithEmailAndPassword(auth, data.email, data.password);
       } else {
         await createUserWithEmailAndPassword(auth, data.email, data.password);
       }
+      setIsLoading(false)
       router.push('/dashboard');
     } catch (error: any) {
+      setIsLoading(false)
       toast({
         title: 'Error',
         description: error.message,
@@ -45,24 +49,26 @@ export default function AuthForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-w-md mx-auto">
-      <div>
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" type="email" {...register('email')} />
-        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
-      </div>
-      <div>
-        <Label htmlFor="password">Password</Label>
-        <Input id="password" type="password" {...register('password')} />
-        {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
-      </div>
-      <Button type="submit" className="w-full">{isLogin ? 'Log In' : 'Sign Up'}</Button>
-      <p className="text-center">
-        {isLogin ? "Don't have an account? " : "Already have an account? "}
-        <Button variant="link" type="button" onClick={() => setIsLogin(!isLogin)}>
-          {isLogin ? 'Sign Up' : 'Log In'}
-        </Button>
-      </p>
-    </form>
+    <div className="bg-white shadow rounded-lg p-4 max-w-md mx-auto">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 ">
+        <div>
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" type="email" {...register('email')} />
+          {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
+        </div>
+        <div>
+          <Label htmlFor="password">Password</Label>
+          <Input id="password" type="password" {...register('password')} />
+          {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
+        </div>
+        <Button type="submit" className="w-full">{isLoading ? 'Please wait...' : isLogin ? 'Log In' : 'Sign Up'}</Button>
+        <p className="text-center">
+          {isLogin ? "Don't have an account? " : "Already have an account? "}
+          <Button variant="link" type="button" onClick={() => setIsLogin(!isLogin)} disabled={isLoading}>
+            {isLogin ? 'Sign Up' : 'Log In'}
+          </Button>
+        </p>
+      </form>
+    </div>
   );
 }
