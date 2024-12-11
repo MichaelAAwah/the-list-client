@@ -10,6 +10,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
+import ListLoadingSkeleton from './ListLoadingSkeleton';
+import { Card, Spinner } from '@radix-ui/themes';
+
 interface Manga {
   id: string;
   title: string;
@@ -76,13 +79,13 @@ export default function MangaList() {
     }
   );
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <ListLoadingSkeleton />;
   if (isError) return <div>Error fetching manga list</div>;
 
   return (
     <div className="space-y-4">
       {mangas?.map((manga) => (
-        <div key={manga.id} className="backdrop-blur-sm bg-white/30 shadow rounded-lg p-4">
+        <Card key={manga.id}>
           {editingId === manga.id ? (
             <form onSubmit={(e) => {
               e.preventDefault();
@@ -98,7 +101,7 @@ export default function MangaList() {
               };
               updateMangaMutation.mutate(updatedManga);
               setEditingId(null);
-            }} className="space-y-2 text-white">
+            }} className="space-y-2">
               <div>
                 <Label htmlFor="title">Title</Label>
                 <Input id="title" name="title" defaultValue={manga.title} required />
@@ -124,12 +127,12 @@ export default function MangaList() {
                 <Input id="alternateTitles" name="alternateTitles" defaultValue={manga.alternateTitles.join(', ')} />
               </div>
               <div className="mt-2 flex justify-end">
-                <Button type="submit" disabled={isEditing}>{isEditing ? 'Saving...' : 'Save'}</Button>
-                <Button type="button" variant="outline" className='ms-2 text-black' onClick={() => setEditingId(null)}>Cancel</Button>
+                <Button type="submit" disabled={isEditing}><Spinner loading={isEditing} /> {isEditing ? 'Saving...' : 'Save'}</Button>
+                <Button type="button" variant="outline" className='ms-2' onClick={() => setEditingId(null)}>Cancel</Button>
               </div>
             </form>
           ) : (
-            <div className='text-white capitalize'>
+            <div className='capitalize'>
               <h3 className="text-lg font-semibold">{manga.title}</h3>
               <p>Chapter: {manga.chapter} / {manga.totalChapters}</p>
               <p>Status: {manga.isComplete ? 'Completed' : 'Ongoing'}</p>
@@ -141,13 +144,17 @@ export default function MangaList() {
                 </div>
 
                 <div>
-                  <Button onClick={() => setEditingId(manga.id)} className="mr-2">Edit</Button>
-                  <Button onClick={() => deleteMangaMutation.mutate(manga.id)} variant="destructive" disabled={isDeleting}>{isDeleting ? 'Deleting...' : 'Delete'}</Button>
+                  <Button onClick={() => setEditingId(manga.id)} className="mr-2" variant="default">Edit</Button>
+                  <Button onClick={() => deleteMangaMutation.mutate(manga.id)} variant="destructive" disabled={isDeleting}>
+                    <Spinner loading={isDeleting}>
+                    </Spinner>
+                    {isDeleting ? 'Deleting...' : 'Delete'}
+                  </Button>
                 </div>
               </div>
             </div>
           )}
-        </div>
+        </Card>
       ))}
     </div>
   );

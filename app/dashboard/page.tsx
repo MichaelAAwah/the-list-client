@@ -7,6 +7,7 @@ import { auth } from '@/lib/firebase';
 import MangaList from '@/components/MangaList';
 import AddMangaModal from '@/components/AddMangaModal';
 import { Button } from '@/components/ui/button';
+import { Skeleton, Spinner } from '@radix-ui/themes';
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
@@ -39,21 +40,23 @@ export default function Dashboard() {
     }
   };
 
-  if (!user) {
-    return <div>Loading...</div>;
-  }
+  // if (!user) {
+  //   return <div>Loading...</div>;
+  // }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-white">Your Manga List</h1>
-        <div>
-          <Button onClick={() => setIsAddModalOpen(true)} className="mr-4">Add Manga</Button>
-          <Button onClick={handleSignOut} variant="outline" disabled={signingOut}>{signingOut ? 'Signing Out...' : 'Sign Out'}</Button>
+    <Skeleton loading={!user}>
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-white">Your Manga List</h1>
+          <div>
+            <Button onClick={() => setIsAddModalOpen(true)} className="mr-4">Add Manga</Button>
+            <Button onClick={handleSignOut} variant="outline" disabled={signingOut}><Spinner loading={signingOut} />{signingOut ? 'Signing Out...' : 'Sign Out'}</Button>
+          </div>
         </div>
+        <MangaList />
+        <AddMangaModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
       </div>
-      <MangaList />
-      <AddMangaModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
-    </div>
+    </Skeleton>
   );
 }

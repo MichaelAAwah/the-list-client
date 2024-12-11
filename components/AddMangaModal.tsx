@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
+import { Spinner } from '@radix-ui/themes';
 
 const schema = z.object({
   title: z.string().min(1, { message: 'Title is required' }),
@@ -103,7 +104,9 @@ export default function AddMangaModal({ isOpen, onClose }: AddMangaModalProps) {
             <Label htmlFor="alternateTitles">Alternate Titles (comma-separated)</Label>
             <Input id="alternateTitles" {...register('alternateTitles')} />
           </div>
-          <Button type="submit" disabled={loading}>{loading ? 'Adding Mange...' : 'Add Manga'}</Button>
+          <div className="flex justify-end">
+            <Button type="submit" disabled={loading}><Spinner loading={loading} /> {loading ? 'Adding Mange...' : 'Add Manga'}</Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { Card, Spinner } from '@radix-ui/themes';
 
 const schema = z.object({
   email: z.string().email({ message: 'Invalid email address' }),
@@ -49,7 +50,7 @@ export default function AuthForm() {
   };
 
   return (
-    <div className="bg-white shadow rounded-lg p-4 max-w-md mx-auto">
+    <Card className='max-w-md mx-auto'>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 ">
         <div>
           <Label htmlFor="email">Email</Label>
@@ -61,7 +62,11 @@ export default function AuthForm() {
           <Input id="password" type="password" {...register('password')} />
           {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
         </div>
-        <Button type="submit" className="w-full">{isLoading ? 'Please wait...' : isLogin ? 'Log In' : 'Sign Up'}</Button>
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          <Spinner loading={isLoading}>
+          </Spinner>
+          {isLoading ? 'Please wait...' : isLogin ? 'Log In' : 'Sign Up'}
+        </Button>
         <p className="text-center">
           {isLogin ? "Don't have an account? " : "Already have an account? "}
           <Button variant="link" type="button" onClick={() => setIsLogin(!isLogin)} disabled={isLoading}>
@@ -69,6 +74,6 @@ export default function AuthForm() {
           </Button>
         </p>
       </form>
-    </div>
+    </Card>
   );
 }
