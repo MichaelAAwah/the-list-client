@@ -105,7 +105,7 @@ export default function AddMangaModal({ isOpen, onClose }: AddMangaModalProps) {
             <Input id="alternateTitles" {...register('alternateTitles')} />
           </div>
           <div className="flex justify-end">
-            <Button type="submit" disabled={loading}><Spinner loading={loading} /> {loading ? 'Adding Mange...' : 'Add Manga'}</Button>
+            <Button type="submit" disabled={loading}><Spinner loading={loading} /> {loading ? 'Adding Manga...' : 'Add Manga'}</Button>
           </div>
         </form>
       </DialogContent>

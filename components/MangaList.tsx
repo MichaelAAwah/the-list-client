@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { collection, query, getDocs, doc, updateDoc, deleteDoc, Timestamp } from 'firebase/firestore';
+import { collection, query, getDocs, doc, updateDoc, deleteDoc, Timestamp, limit, startAfter, QueryDocumentSnapshot, DocumentData, endBefore, orderBy } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,8 +10,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
-import ListLoadingSkeleton from './ListLoadingSkeleton';
 import { Card, Spinner } from '@radix-ui/themes';
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from './ui/pagination';
+
+import ListLoadingSkeleton from './ListLoadingSkeleton';
+import MangaListFilters from './MangaListFilters';
 
 interface Manga {
   id: string;
@@ -31,14 +34,31 @@ export default function MangaList() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [page, setPage] = useState<'next' | 'prev'>('next'); // Number of items per page
+  const [firstDoc, setFirstDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null); // Track the first document
+  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null); // Track the last document
+  // check loading states for page changes
 
-  const { data: mangas, isLoading, isError } = useQuery<Manga[]>(['mangas'], async () => {
-    const user = auth.currentUser;
-    if (!user) throw new Error('User not authenticated');
+  const { data: mangas, isLoading, isError } = useQuery<Manga[]>({
+    queryKey: ['mangas', page], 
+    queryFn: async ({ queryKey }) => {
+      const user = auth.currentUser;
+      if (!user) throw new Error('User not authenticated');
 
-    const q = query(collection(db, 'list'));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Manga));
+      const [_key, page] = queryKey
+
+      const q = query(collection(db, 'list'), orderBy('title'), page === 'next' ? startAfter(lastDoc) : endBefore(firstDoc), limit(25));
+      const querySnapshot = await getDocs(q);
+
+      const firstVisible = querySnapshot.docs[0];
+      setFirstDoc(firstVisible)
+
+      const lastVisible = querySnapshot.docs[querySnapshot.docs.length-1];
+      setLastDoc(lastVisible)
+
+      return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Manga));
+    },
+    keepPreviousData: true
   });
 
   const updateMangaMutation = useMutation(
@@ -84,6 +104,9 @@ export default function MangaList() {
 
   return (
     <div className="space-y-4">
+      <div className='mb-4'>
+        <MangaListFilters />
+      </div>
       {mangas?.map((manga) => (
         <Card key={manga.id}>
           {editingId === manga.id ? (
@@ -156,6 +179,14 @@ export default function MangaList() {
           )}
         </Card>
       ))}
+      <div className='mt-4'>
+        <Pagination>
+          <PaginationContent>
+            <PaginationPrevious className='cursor-pointer' onClick={() => setPage('prev')} aria-disabled={!firstDoc || isLoading} />
+            <PaginationNext className='cursor-pointer' onClick={() => setPage('next')} aria-disabled={!lastDoc || isLoading} />
+          </PaginationContent>
+        </Pagination>
+      </div>
     </div>
   );
 }

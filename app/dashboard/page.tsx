@@ -8,6 +8,7 @@ import MangaList from '@/components/MangaList';
 import AddMangaModal from '@/components/AddMangaModal';
 import { Button } from '@/components/ui/button';
 import { Skeleton, Spinner } from '@radix-ui/themes';
+import MangaListFilters from '@/components/MangaListFilters';
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
@@ -17,7 +18,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log({user})
+      // console.log({user})
       if (user) {
         setUser(user);
       } else {
