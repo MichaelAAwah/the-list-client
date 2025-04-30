@@ -32,7 +32,16 @@ interface AddMangaModalProps {
 }
 
 export default function AddMangaModal({ isOpen, onClose }: AddMangaModalProps) {
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>({
+  const defaultValues: FormData = {
+    title: '',
+    chapter: '',
+    totalChapters: '',
+    url: '',
+    isComplete: false,
+    alternateTitles: '',
+  }
+  const { register, handleSubmit, reset, formState: { errors }, getValues } = useForm<FormData>({
+    defaultValues,
     resolver: zodResolver(schema),
   });
   const queryClient = useQueryClient();
